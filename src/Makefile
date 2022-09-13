@@ -32,6 +32,7 @@ TARGETS = X_cursor                              \
           sb_up_arrow                           \
           sb_v_double_arrow                     \
           sizing                                \
+          top_left_arrow                        \
           top_left_corner                       \
           top_right_corner                      \
           watch                                 \
@@ -50,7 +51,6 @@ install: $(TARGETS)
        cp $(TARGETS) $(INSTALLDIR)/cursors;     \
        cd $(INSTALLDIR)/cursors;                \
        ln -sf hand2 hand1;                      \
-       ln -sf left_ptr top_left_arrow;          \
        ln -sf right_ptr arrow;                  \
        ln -sf right_ptr draft_large;            \
        ln -sf right_ptr draft_small;            \
