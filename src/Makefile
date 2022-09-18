@@ -3,8 +3,12 @@
 ifeq (0, $(shell which xcursorgen &>/dev/null))
   $(error "Missing xcursorgen program, exiting")
  endif
-
 XCURSORGEN = xcursorgen
+
+ifeq (0, $(shell which convert &>/dev/null))
+  $(error "Missing ImageMagick convert program, exiting")
+ endif
+CONVERT = convert
 
 INSTALLDIR = x11-cursors
 
@@ -35,12 +39,44 @@ TARGETS = X_cursor                              \
           top_left_arrow                        \
           top_left_corner                       \
           top_right_corner                      \
-          watch                                 \
+          watch1                                \
+          watch2                                \
+          watch3                                \
+          watch4                                \
+          watch5                                \
+          watch6                                \
           xterm                                 \
           zoom-in                               \
           zoom-out
 
-all: $(TARGETS)
+IMGSRCS = $(patsubst %,%.png,$(TARGETS))
+TMPSRCS = $(patsubst %,%.in,$(TARGETS))
+
+IMGSRCS48 = $(patsubst %,%-48.png,$(TARGETS))
+TMPSRCS48 = $(patsubst %,%-48.in,$(TARGETS))
+
+all: 48
+
+32: $(IMGSRCS) $(TMPSRCS)
+	@( for f in *.in; do							\
+           $(XCURSORGEN) $$f $${f%%.in};			\
+       done; )
+
+%-48.png: %.png
+	@$(CONVERT) -resize 48x48 $< $@
+
+%-48.in: %.in
+	@( trap "rm -rf tmp.bin" HUP INT QUIT TERM EXIT;			\
+       rm -rf tmp.bin;											\
+       cat $< | while read a b c d e; do						\
+           echo 48 `expr $$b \\* 2` `expr $$c \* 2`	$$d $$e;	\
+       done >>tmp.bin;									        \
+       mv tmp.bin $@; )
+
+48: $(IMGSRCS48) $(TMPSRCS48)
+	@( for f in *-48.in; do							\
+           $(XCURSORGEN) $$f $${f%%-48.in};			\
+       done; )
 
 %: %.in
 	@$(XCURSORGEN) $< $@
@@ -63,7 +99,7 @@ install: $(TARGETS)
        ln -sf X_cursor pirate; )
 
 clean:
-	@rm -f $(TARGETS)
+	@rm -f $(TARGETS) $(IMGSRCS48) $(TMPSRCS48)
 
 realclean: clean
 	@rm -rf x11-cursors
