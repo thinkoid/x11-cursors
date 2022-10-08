@@ -66,11 +66,12 @@ all: 48
 	@$(CONVERT) -resize 48x48 $< $@
 
 %-48.in: %.in
-	@( trap "rm -rf tmp.bin" HUP INT QUIT TERM EXIT;			\
-       rm -rf tmp.bin;											\
-       cat $< | while read a b c d e; do						\
-           echo 48 `expr $$b \\* 2` `expr $$c \* 2`	$$d $$e;	\
-       done >>tmp.bin;									        \
+	@( trap "rm -rf tmp.bin" HUP INT QUIT TERM EXIT;            \
+       rm -rf tmp.bin;                                          \
+       cat $< | while read a b c d e; do                        \
+           echo 48 `expr $$b \\* 3 / 2` `expr $$c \* 3 / 2`     \
+               $${d%%.png}-48.png $$e;                          \
+       done >>tmp.bin;                                          \
        mv tmp.bin $@; )
 
 48: $(IMGSRCS48) $(TMPSRCS48)
