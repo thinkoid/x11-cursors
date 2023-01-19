@@ -52,10 +52,30 @@ TARGETS = X_cursor                              \
 IMGSRCS = $(patsubst %,%.png,$(TARGETS))
 TMPSRCS = $(patsubst %,%.in,$(TARGETS))
 
+IMGSRCS24 = $(patsubst %,%-24.png,$(TARGETS))
+TMPSRCS24 = $(patsubst %,%-24.in,$(TARGETS))
+
 IMGSRCS48 = $(patsubst %,%-48.png,$(TARGETS))
 TMPSRCS48 = $(patsubst %,%-48.in,$(TARGETS))
 
 all: 48
+
+%-24.png: %.png
+	@$(CONVERT) -resize 24x24 $< $@
+
+%-24.in: %.in
+	@( trap "rm -rf tmp.bin" HUP INT QUIT TERM EXIT;            \
+       rm -rf tmp.bin;                                          \
+       cat $< | while read a b c d e; do                        \
+           echo 24 `expr $$b \\* 3 / 4` `expr $$c \* 3 / 4`     \
+               $${d%%.png}-24.png $$e;                          \
+       done >>tmp.bin;                                          \
+       mv tmp.bin $@; )
+
+24: $(IMGSRCS24) $(TMPSRCS24)
+	@( for f in *-24.in; do							\
+           $(XCURSORGEN) $$f $${f%%-24.in};			\
+       done; )
 
 32: $(IMGSRCS) $(TMPSRCS)
 	@( for f in *.in; do							\
@@ -100,7 +120,7 @@ install: $(TARGETS)
        ln -sf X_cursor pirate; )
 
 clean:
-	@rm -f $(TARGETS) $(IMGSRCS48) $(TMPSRCS48)
+	@rm -f $(TARGETS) $(IMGSRCS48) $(TMPSRCS48) $(IMGSRCS24) $(TMPSRCS24)
 
 realclean: clean
 	@rm -rf x11-cursors
